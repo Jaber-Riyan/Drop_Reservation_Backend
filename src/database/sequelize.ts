@@ -26,7 +26,7 @@ export async function loadModels(): Promise<void> {
 
   // Future modules will be imported here:
   await import('../modules/drop/drop.model');
-  // await import('../modules/reservation/reservation.model');
+  await import('../modules/reservation/reservation.model');
   // await import('../modules/purchase/purchase.model');
   // await import('../modules/activity/activity.model');
 }
