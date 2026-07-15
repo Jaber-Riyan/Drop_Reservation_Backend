@@ -12,7 +12,12 @@
     "format": "prettier --write 'src/**/*.ts'",
     "clean": "rm -rf dist"
   },
-  "keywords": ["techzu", "assessment", "backend", "api"],
+  "keywords": [
+    "techzu",
+    "assessment",
+    "backend",
+    "api"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
@@ -22,7 +27,8 @@
     "express": "^5.2.1",
     "pg": "^8.22.0",
     "pg-hstore": "^2.3.4",
-    "sequelize": "^6.37.8"
+    "sequelize": "^6.37.8",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

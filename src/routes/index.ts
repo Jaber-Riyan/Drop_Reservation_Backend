@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import userRoutes from '../modules/user/user.routes';
+import dropRoutes from '../modules/drop/drop.routes';
 import { sendSuccess, sendError } from '../utils/response';
 import sequelize from '../database/sequelize';
 
@@ -38,9 +39,9 @@ router.get('/health', async (req: Request, res: Response) => {
 
 // Register module routes
 router.use(userRoutes);
+router.use(dropRoutes);
 
 // Future module routes will be registered here:
-// router.use('/api/drops', dropRoutes);
 // router.use('/api/reservations', reservationRoutes);
 // router.use('/api/purchases', purchaseRoutes);
 // router.use('/api/activities', activityRoutes);
