@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import userRoutes from '../modules/user/user.routes';
 import dropRoutes from '../modules/drop/drop.routes';
 import reservationRoutes from '../modules/reservation/reservation.routes';
+import purchaseRoutes from '../modules/purchase/purchase.routes';
 import { sendSuccess, sendError } from '../utils/response';
 import sequelize from '../database/sequelize';
 
@@ -44,7 +45,7 @@ router.use(dropRoutes);
 
 // Future module routes will be registered here:
 router.use(reservationRoutes);
-// router.use('/api/purchases', purchaseRoutes);
+router.use(purchaseRoutes);
 // router.use('/api/activities', activityRoutes);
 
 export default router;
