@@ -91,7 +91,7 @@ class ReservationService {
       );
 
       if (existingReservation) {
-        throw new Error('User already has an active reservation for this drop');
+        throw new Error('You already have an active reservation for this drop');
       }
 
       // Step 5: Decrease availableStock
