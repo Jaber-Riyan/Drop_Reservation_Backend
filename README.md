@@ -116,7 +116,7 @@ Backend runs at `http://localhost:4004`
 
 ```env
 NODE_ENV=development
-PORT=4004
+PORT=4000
 DATABASE_URL=postgresql://username:password@localhost:5432/techzu_db
 ```
 
