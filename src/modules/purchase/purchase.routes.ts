@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import PurchaseController from './purchase.controller';
+import type { SocketService } from '../../socket';
 
 /**
  * Purchase routes.
@@ -12,11 +13,13 @@ import PurchaseController from './purchase.controller';
  * - GET  /purchases       - Get all purchases
  * - GET  /purchases/:id   - Get a purchase by ID
  */
-const router = Router();
-const purchaseController = new PurchaseController();
+export function createPurchaseRoutes(socketService: SocketService): Router {
+  const router = Router();
+  const purchaseController = new PurchaseController(socketService);
 
-router.post('/purchases', (req, res, next) => purchaseController.create(req, res, next));
-router.get('/purchases', (req, res, next) => purchaseController.getAll(req, res, next));
-router.get('/purchases/:id', (req, res, next) => purchaseController.getById(req, res, next));
+  router.post('/purchases', (req, res, next) => purchaseController.create(req, res, next));
+  router.get('/purchases', (req, res, next) => purchaseController.getAll(req, res, next));
+  router.get('/purchases/:id', (req, res, next) => purchaseController.getById(req, res, next));
 
-export default router;
+  return router;
+}

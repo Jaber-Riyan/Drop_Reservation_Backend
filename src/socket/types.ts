@@ -107,10 +107,14 @@ export interface PurchaseFailedPayload {
 /**
  * Payload for ACTIVITY.UPDATED.
  *
- * Emitted as a Global Event whenever a new activity entry is created.
+ * Emitted as a Global Event whenever a new purchase is completed.
+ * Contains all fields the frontend needs to render the activity item
+ * immediately without making another API request.
  */
 export interface ActivityUpdatedPayload {
-  activityId: number;
-  type: string;
-  targetId: number;
+  purchaseId: number;
+  username: string;
+  dropId: number;
+  dropName: string;
+  purchasedAt: string;
 }

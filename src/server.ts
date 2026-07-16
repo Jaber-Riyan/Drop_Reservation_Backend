@@ -1,8 +1,9 @@
-import app from './app';
+import app, { mountErrorHandlers, mountRoutes } from './app';
 import { env, validateEnv } from './config/env';
 import { initializeDatabase } from './database/sequelize';
 import { createServer } from 'http';
 import { initializeSocket } from './socket';
+import { createRoutes } from './routes';
 import { startReservationExpirationCron } from './cron/reservation-expiration.cron';
 
 /**
@@ -32,10 +33,16 @@ async function main(): Promise<void> {
     // Step 4: Initialize Socket.IO
     const { socketService } = initializeSocket(server);
 
-    // Step 5: Start cron jobs
+    // Step 5: Mount routes (socketService injected where needed)
+    mountRoutes(createRoutes(socketService));
+
+    // Mount error handlers LAST
+    mountErrorHandlers();
+
+    // Step 6: Start cron jobs
     startReservationExpirationCron(socketService);
 
-    // Step 6: Start the server
+    // Step 7: Start the server
     server.listen(env.port, () => {
       console.log(`✓ Server running on port ${env.port}`);
       console.log(`✓ Environment: ${env.nodeEnv}`);

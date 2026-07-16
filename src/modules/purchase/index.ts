@@ -6,7 +6,7 @@
  * and makes the routes available for mounting.
  */
 export { default as Purchase } from './purchase.model';
-export { default as purchaseRoutes } from './purchase.routes';
+export { createPurchaseRoutes } from './purchase.routes';
 export { default as PurchaseService } from './purchase.service';
 export { default as PurchaseController } from './purchase.controller';
 export { default as PurchaseRepository } from './purchase.repository';

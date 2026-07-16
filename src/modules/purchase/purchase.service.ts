@@ -2,9 +2,14 @@ import sequelize from '../../database/sequelize';
 import { Transaction } from 'sequelize';
 import PurchaseRepository from './purchase.repository';
 import ReservationRepository from '../reservation/reservation.repository';
+import User from '../user/user.model';
+import Drop from '../drop/drop.model';
 import Purchase from './purchase.model';
 import Reservation from '../reservation/reservation.model';
 import { ReservationStatus } from '../reservation/reservation.interface';
+import { EVENTS } from '../../socket';
+import type { SocketService } from '../../socket';
+import type { ActivityUpdatedPayload } from '../../socket/types';
 
 /**
  * PurchaseService - contains ALL business logic related to Purchases.
@@ -16,11 +21,15 @@ import { ReservationStatus } from '../reservation/reservation.interface';
  * - Reservation status becomes PURCHASED after successful purchase
  * - availableStock is NOT modified during purchase (already decremented at reservation)
  *
+ * After a successful purchase, broadcasts ACTIVITY.UPDATED to all connected
+ * clients so the activity feed can be updated in real time.
+ *
  * The critical operation (createPurchase) is ATOMIC:
  * - Uses a PostgreSQL transaction
  * - Locks the Reservation row with FOR UPDATE
  * - All checks and updates happen inside the transaction
  * - Rollback on any failure
+ * - Socket event is ONLY emitted AFTER the transaction commits
  *
  * This layer:
  * - Coordinates repositories for data access
@@ -31,10 +40,12 @@ import { ReservationStatus } from '../reservation/reservation.interface';
 class PurchaseService {
   private purchaseRepository: PurchaseRepository;
   private reservationRepository: ReservationRepository;
+  private socketService: SocketService;
 
-  constructor() {
+  constructor(socketService: SocketService) {
     this.purchaseRepository = new PurchaseRepository();
     this.reservationRepository = new ReservationRepository();
+    this.socketService = socketService;
   }
 
   /**
@@ -44,11 +55,15 @@ class PurchaseService {
    * update reservation status) happens inside ONE PostgreSQL transaction
    * with row-level locking to prevent race conditions.
    *
+   * AFTER the transaction commits successfully, broadcasts ACTIVITY.UPDATED
+   * to all connected clients with the complete payload needed for the
+   * frontend to render the new activity item immediately.
+   *
    * @throws Error if reservation is not found, does not belong to user,
    *               is not active, or has expired
    */
   async createPurchase(userId: number, dropId: number, reservationId: number): Promise<Purchase> {
-    return sequelize.transaction(async (transaction: Transaction) => {
+    const purchase = await sequelize.transaction(async (transaction: Transaction) => {
       // Step 1: Find and lock the Reservation row with FOR UPDATE
       const reservation = await Reservation.findByPk(reservationId, {
         transaction,
@@ -93,6 +108,25 @@ class PurchaseService {
       // Transaction commits automatically on success
       return purchase;
     });
+
+    // Socket event is ONLY emitted AFTER the transaction commits.
+    // Fetch related data here so the payload is complete for the frontend.
+    const [user, drop] = await Promise.all([
+      User.findByPk(userId, { attributes: ['username'] }),
+      Drop.findByPk(dropId, { attributes: ['name'] }),
+    ]);
+
+    const activityPayload: ActivityUpdatedPayload = {
+      purchaseId: purchase.id,
+      username: user?.username ?? '',
+      dropId: drop?.id ?? dropId,
+      dropName: drop?.name ?? '',
+      purchasedAt: purchase.createdAt.toISOString(),
+    };
+
+    this.socketService.broadcast(EVENTS.ACTIVITY.UPDATED, activityPayload);
+
+    return purchase;
   }
 
   /**

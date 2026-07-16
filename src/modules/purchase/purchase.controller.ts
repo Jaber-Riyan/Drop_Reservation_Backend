@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import PurchaseService from './purchase.service';
 import { sendSuccess, sendCreated, sendError } from '../../utils/response';
 import { createPurchaseSchema } from './purchase.validation';
+import type { SocketService } from '../../socket';
 
 /**
  * PurchaseController - handles HTTP request/response for Purchase endpoints.
@@ -18,8 +19,8 @@ import { createPurchaseSchema } from './purchase.validation';
 class PurchaseController {
   private purchaseService: PurchaseService;
 
-  constructor() {
-    this.purchaseService = new PurchaseService();
+  constructor(socketService: SocketService) {
+    this.purchaseService = new PurchaseService(socketService);
   }
 
   /**

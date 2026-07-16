@@ -10,4 +10,4 @@ export { socketAuth } from './middleware/socketAuth.middleware';
 export { handleConnection } from './handlers/connection.handler';
 export { handleDisconnect } from './handlers/disconnect.handler';
 export { EVENTS, type SocketEvent } from './events';
-export type { SocketData, AuthenticatedSocket } from './types';
+export type { SocketData, AuthenticatedSocket, StockUpdatedPayload, ReservationCreatedPayload, ReservationExpiredPayload, ReservationFailedPayload, PurchaseCompletedPayload, PurchaseFailedPayload, ActivityUpdatedPayload } from './types';

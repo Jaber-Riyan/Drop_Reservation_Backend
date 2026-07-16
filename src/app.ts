@@ -1,44 +1,49 @@
-import express from 'express';
+import express, { Router } from 'express';
 import cors from 'cors';
-import router from './routes';
 import { errorHandler } from './middlewares/error.middleware';
 import { notFoundHandler } from './middlewares/notFound.middleware';
 
-/**
- * Express application setup.
- *
- * This file creates and configures the Express app with:
- * - CORS middleware for cross-origin requests
- * - JSON body parsing
- * - All registered routes
- * - 404 handler for unmatched routes
- * - Centralized error handler
- *
- * The app is not started here - that happens in server.ts.
- * This separation allows for easier testing.
- */
 const app = express();
 
-// --- Middleware ---
+// -------------------------------------
+// Global Middleware
+// -------------------------------------
 
-// Enable CORS for all origins (restrict in production)
 app.use(cors());
 
-// Parse JSON request bodies
 app.use(express.json());
 
-// Parse URL-encoded request bodies
 app.use(express.urlencoded({ extended: true }));
 
-// --- Routes ---
-app.use(router);
+// -------------------------------------
+// Route Mounting
+// -------------------------------------
 
-// --- Error Handling ---
+/**
+ * Mount all application routes.
+ *
+ * Must be called BEFORE mountErrorHandlers().
+ */
+export function mountRoutes(router: Router): void {
+  app.use(router);
+}
 
-// Handle 404 - must be registered AFTER routes
-app.use(notFoundHandler);
+// -------------------------------------
+// Error Middleware
+// -------------------------------------
 
-// Handle all errors - must be registered LAST
-app.use(errorHandler);
+/**
+ * Mount error handling middleware.
+ *
+ * IMPORTANT:
+ * This MUST be called AFTER all routes have been mounted.
+ */
+export function mountErrorHandlers(): void {
+  // 404 Handler
+  app.use(notFoundHandler);
+
+  // Global Error Handler
+  app.use(errorHandler);
+}
 
 export default app;

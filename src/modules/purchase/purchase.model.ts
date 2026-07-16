@@ -1,6 +1,8 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from '../../database/sequelize';
 import { IPurchase, IPurchaseCreation } from './purchase.interface';
+import User from '../user/user.model';
+import Drop from '../drop/drop.model';
 
 /**
  * Purchase model - represents the purchases table in PostgreSQL.
@@ -66,5 +68,11 @@ Purchase.init(
     updatedAt: false, // Purchase does not have updatedAt
   }
 );
+
+// Associations
+// Purchase belongs to a single User (the buyer)
+Purchase.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+// Purchase belongs to a single Drop (the purchased item)
+Purchase.belongsTo(Drop, { foreignKey: 'dropId', as: 'drop' });
 
 export default Purchase;
