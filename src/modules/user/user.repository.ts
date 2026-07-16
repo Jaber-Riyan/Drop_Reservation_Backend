@@ -8,12 +8,21 @@ import User from './user.model';
  * Add user-specific query methods here as needed.
  *
  * Examples of future methods:
- * - findByUsername(username: string): Promise<User | null>
  * - searchByUsername(query: string): Promise<User[]>
  */
 class UserRepository extends BaseRepository<User> {
   constructor() {
     super(User);
+  }
+
+  /**
+   * Find a user by their username.
+   * Returns null if no user with the given username exists.
+   */
+  async findByUsername(username: string): Promise<User | null> {
+    return this.findOne({
+      where: { username },
+    });
   }
 }
 

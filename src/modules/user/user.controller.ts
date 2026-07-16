@@ -1,12 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import UserService from './user.service';
 import { sendSuccess, sendCreated, sendError } from '../../utils/response';
+import { registerUserSchema } from './user.validation';
 
 /**
  * UserController - handles HTTP request/response for User endpoints.
  *
  * Responsibilities:
  * - Parse request parameters, body, and query strings
+ * - Validate incoming request bodies using Zod schemas
  * - Call the appropriate service method
  * - Return a formatted response using the response helpers
  * - Forward errors to the error middleware via next()
@@ -18,6 +20,29 @@ class UserController {
 
   constructor() {
     this.userService = new UserService();
+  }
+
+  /**
+   * POST /test/users/register
+   * Register a user with a specific username.
+   * If the username already exists, returns the existing user.
+   * If not, creates a new user and returns it.
+   */
+  async register(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const parsed = registerUserSchema.safeParse(req.body);
+
+      if (!parsed.success) {
+        const errorMessages = parsed.error.issues.map((issue) => issue.message);
+        sendError(res, 'Validation failed', 400, errorMessages);
+        return;
+      }
+
+      const user = await this.userService.registerUser(parsed.data.username);
+      sendSuccess(res, 'User registered successfully', user, user.createdAt ? 200 : 201);
+    } catch (error) {
+      next(error);
+    }
   }
 
   /**

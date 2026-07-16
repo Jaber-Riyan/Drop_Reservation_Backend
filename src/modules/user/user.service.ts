@@ -27,6 +27,25 @@ class UserService {
   }
 
   /**
+   * Register a user by username.
+   *
+   * If a user with the given username already exists, returns the existing user.
+   * Otherwise, creates a new user with the provided username and returns it.
+   *
+   * This is a get-or-create pattern that the frontend can use to "log in"
+   * or "register" a user in a single API call.
+   */
+  async registerUser(username: string): Promise<User> {
+    const existingUser = await this.userRepository.findByUsername(username);
+
+    if (existingUser) {
+      return existingUser;
+    }
+
+    return this.userRepository.create({ username });
+  }
+
+  /**
    * Create a new user with a randomly generated username.
    */
   async createUser(): Promise<User> {
