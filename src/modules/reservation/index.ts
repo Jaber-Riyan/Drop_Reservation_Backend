@@ -6,7 +6,7 @@
  * and makes the routes available for mounting.
  */
 export { default as Reservation } from './reservation.model';
-export { default as reservationRoutes } from './reservation.routes';
+export { createReservationRoutes } from './reservation.routes';
 export { default as ReservationService } from './reservation.service';
 export { default as ReservationController } from './reservation.controller';
 export { default as ReservationRepository } from './reservation.repository';
