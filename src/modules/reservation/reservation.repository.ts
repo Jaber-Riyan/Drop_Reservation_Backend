@@ -33,6 +33,20 @@ class ReservationRepository extends BaseRepository<Reservation> {
   }
 
   /**
+   * Find all ACTIVE reservations for a specific user.
+   * Used to show the user their current active holds.
+   */
+  async findActiveByUserId(userId: number, options?: FindOptions): Promise<Reservation[]> {
+    return this.findAll({
+      where: {
+        userId,
+        status: ReservationStatus.ACTIVE,
+      },
+      ...options,
+    });
+  }
+
+  /**
    * Find all ACTIVE reservations that have expired (expiresAt <= NOW()).
    *
    * This is used by the expiration cron to identify reservations that need

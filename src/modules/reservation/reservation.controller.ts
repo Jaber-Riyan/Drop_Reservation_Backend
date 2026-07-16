@@ -56,7 +56,8 @@ class ReservationController {
 
         if (
           message === 'No available stock for this drop' ||
-          message === 'User already has an active reservation for this drop'
+          message === 'User already has an active reservation for this drop' ||
+          message === 'drop is not started'
         ) {
           sendError(res, message, 409);
           return;
@@ -102,6 +103,27 @@ class ReservationController {
       }
 
       sendSuccess(res, 'Reservation retrieved successfully', reservation);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /reservations/user/:userId
+   * Get all ACTIVE reservations for a specific user.
+   */
+  async getActiveByUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userIdParam = req.params.userId as string;
+      const userId = parseInt(userIdParam, 10);
+
+      if (isNaN(userId)) {
+        sendError(res, 'Invalid user ID', 400);
+        return;
+      }
+
+      const reservations = await this.reservationService.getActiveReservationsByUser(userId);
+      sendSuccess(res, 'Active reservations retrieved successfully', reservations);
     } catch (error) {
       next(error);
     }

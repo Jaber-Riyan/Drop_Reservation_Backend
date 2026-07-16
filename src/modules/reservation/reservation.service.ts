@@ -59,12 +59,19 @@ class ReservationService {
         throw new Error('Drop not found');
       }
 
-      // Step 2: Check available stock
+      const now = new Date();
+
+      // Step 2: Check if drop has started
+      if (drop.startsAt > now) {
+        throw new Error('drop is not started');
+      }
+
+      // Step 3: Check available stock
       if (drop.availableStock <= 0) {
         throw new Error('No available stock for this drop');
       }
 
-      // Step 3: Check if user already has an ACTIVE reservation for this drop
+      // Step 4: Check if user already has an ACTIVE reservation for this drop
       const existingReservation = await this.reservationRepository.findActiveByUserAndDrop(
         userId,
         dropId,
@@ -75,12 +82,11 @@ class ReservationService {
         throw new Error('User already has an active reservation for this drop');
       }
 
-      // Step 4: Decrease availableStock
+      // Step 5: Decrease availableStock
       drop.availableStock -= 1;
       await drop.save({ transaction });
 
-      // Step 5: Calculate expiresAt (60 seconds from now)
-      const now = new Date();
+      // Step 6: Calculate expiresAt (60 seconds from now)
       const expiresAt = new Date(now.getTime() + 60000);
 
       // Step 6: Create the reservation
@@ -104,6 +110,13 @@ class ReservationService {
    */
   async getReservations(): Promise<Reservation[]> {
     return this.reservationRepository.findAll();
+  }
+
+  /**
+   * Get all ACTIVE reservations for a specific user.
+   */
+  async getActiveReservationsByUser(userId: number): Promise<Reservation[]> {
+    return this.reservationRepository.findActiveByUserId(userId);
   }
 
   /**
