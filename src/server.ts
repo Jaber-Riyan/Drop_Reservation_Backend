@@ -1,6 +1,8 @@
 import app from './app';
 import { env, validateEnv } from './config/env';
 import { initializeDatabase } from './database/sequelize';
+import { createServer } from 'http';
+import { initializeSocket } from './socket';
 
 /**
  * Application entry point.
@@ -23,11 +25,18 @@ async function main(): Promise<void> {
     // This authenticates and syncs models before starting the server
     await initializeDatabase();
 
-    // Step 3: Start the Express server
-    app.listen(env.port, () => {
+    // Step 3: Create HTTP server from Express app
+    const server = createServer(app);
+
+    // Step 4: Initialize Socket.IO
+    const { socketService } = initializeSocket(server);
+
+    // Step 5: Start the server
+    server.listen(env.port, () => {
       console.log(`✓ Server running on port ${env.port}`);
       console.log(`✓ Environment: ${env.nodeEnv}`);
       console.log(`✓ API available at http://localhost:${env.port}`);
+      console.log(`✓ Socket.IO initialized`);
     });
   } catch (error) {
     console.error('✗ Failed to start server:', error);
