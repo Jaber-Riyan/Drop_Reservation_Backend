@@ -3,6 +3,7 @@ import { env, validateEnv } from './config/env';
 import { initializeDatabase } from './database/sequelize';
 import { createServer } from 'http';
 import { initializeSocket } from './socket';
+import { startReservationExpirationCron } from './cron/reservation-expiration.cron';
 
 /**
  * Application entry point.
@@ -31,7 +32,10 @@ async function main(): Promise<void> {
     // Step 4: Initialize Socket.IO
     const { socketService } = initializeSocket(server);
 
-    // Step 5: Start the server
+    // Step 5: Start cron jobs
+    startReservationExpirationCron(socketService);
+
+    // Step 6: Start the server
     server.listen(env.port, () => {
       console.log(`✓ Server running on port ${env.port}`);
       console.log(`✓ Environment: ${env.nodeEnv}`);

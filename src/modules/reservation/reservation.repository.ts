@@ -1,7 +1,8 @@
 import BaseRepository from '../../repositories/BaseRepository';
 import Reservation from './reservation.model';
 import { ReservationStatus } from './reservation.interface';
-import { FindOptions } from 'sequelize';
+import { FindOptions, UpdateOptions, Op } from 'sequelize';
+import sequelize from '../../database/sequelize';
 
 /**
  * ReservationRepository - handles database operations for the Reservation model.
@@ -29,6 +30,39 @@ class ReservationRepository extends BaseRepository<Reservation> {
       },
       ...options,
     });
+  }
+
+  /**
+   * Find all ACTIVE reservations that have expired (expiresAt <= NOW()).
+   *
+   * This is used by the expiration cron to identify reservations that need
+   * to be marked as EXPIRED and have their drop stock restored.
+   */
+  async findExpiredActiveReservations(): Promise<Reservation[]> {
+    return this.findAll({
+      where: {
+        status: ReservationStatus.ACTIVE,
+        expiresAt: {
+          [Op.lte]: sequelize.literal('NOW()'),
+        },
+      },
+    });
+  }
+
+  /**
+   * Update the status of a reservation.
+   *
+   * Returns the updated reservation instance, or null if the reservation
+   * is not found. The transaction option should be provided when this is
+   * called inside a larger atomic operation.
+   */
+  async updateStatus(id: number, status: ReservationStatus, options?: Omit<UpdateOptions, 'where'>): Promise<Reservation | null> {
+    const reservation = await this.findById(id, options);
+    if (!reservation) {
+      return null;
+    }
+    await reservation.update({ status }, options as any);
+    return reservation;
   }
 }
 
