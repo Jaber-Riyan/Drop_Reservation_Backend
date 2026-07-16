@@ -14,7 +14,8 @@ import { AuthenticatedSocket } from '../types';
  * If valid, userId is attached to socket.data for later use.
  */
 export function socketAuth(socket: Socket, next: (err?: Error) => void): void {
-  const { userId } = socket.handshake.auth;
+  // Check both auth object and query parameters for userId
+  const userId = socket.handshake.auth?.userId ?? socket.handshake.query?.userId;
 
   // Validate that userId exists
   if (!userId) {
@@ -24,7 +25,7 @@ export function socketAuth(socket: Socket, next: (err?: Error) => void): void {
 
   // Attach userId to socket.data so handlers can access it
   const authenticatedSocket = socket as AuthenticatedSocket;
-  authenticatedSocket.data.userId = userId as number;
+  authenticatedSocket.data.userId = Number(userId) || userId;
 
   next();
 }

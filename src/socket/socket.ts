@@ -37,14 +37,14 @@ export function initializeSocket(server: HttpServer): SocketInitializationResult
   io.use(socketAuth);
 
   // Register connection handler
-  io.on(EVENTS.CONNECTION, (socket: Socket) => {
+  io.on(EVENTS.SOCKET.CONNECTION, (socket: Socket) => {
     const authenticatedSocket = socket as AuthenticatedSocket;
 
     // Call the connection handler
     handleConnection(io, authenticatedSocket);
 
     // Register disconnect handler for this specific socket
-    socket.on(EVENTS.DISCONNECT, (reason: string) => {
+    socket.on(EVENTS.SOCKET.DISCONNECT, (reason: string) => {
       handleDisconnect(io, authenticatedSocket, reason);
     });
   });
