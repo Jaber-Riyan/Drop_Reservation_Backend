@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import ReservationController from './reservation.controller';
+import ReservationService from './reservation.service';
 
 /**
  * Reservation routes.
@@ -13,12 +14,14 @@ import ReservationController from './reservation.controller';
  * - GET  /reservations/user/:userId - Get active reservations for a user
  * - GET  /reservations/:id       - Get a reservation by ID
  */
-const router = Router();
-const reservationController = new ReservationController();
+export function createReservationRoutes(reservationService: ReservationService): Router {
+  const router = Router();
+  const reservationController = new ReservationController(reservationService);
 
-router.post('/reservations', (req, res, next) => reservationController.create(req, res, next));
-router.get('/reservations', (req, res, next) => reservationController.getAll(req, res, next));
-router.get('/reservations/user/:userId', (req, res, next) => reservationController.getActiveByUser(req, res, next));
-router.get('/reservations/:id', (req, res, next) => reservationController.getById(req, res, next));
+  router.post('/reservations', (req, res, next) => reservationController.create(req, res, next));
+  router.get('/reservations', (req, res, next) => reservationController.getAll(req, res, next));
+  router.get('/reservations/user/:userId', (req, res, next) => reservationController.getActiveByUser(req, res, next));
+  router.get('/reservations/:id', (req, res, next) => reservationController.getById(req, res, next));
 
-export default router;
+  return router;
+}

@@ -5,6 +5,8 @@ import DropRepository from '../drop/drop.repository';
 import Reservation from './reservation.model';
 import Drop from '../drop/drop.model';
 import { ReservationStatus } from './reservation.interface';
+import { SocketService } from '../../socket';
+import { EVENTS } from '../../socket/events';
 
 /**
  * ReservationService - contains ALL business logic related to Reservations.
@@ -31,10 +33,20 @@ import { ReservationStatus } from './reservation.interface';
 class ReservationService {
   private reservationRepository: ReservationRepository;
   private dropRepository: DropRepository;
+  private socketService: SocketService;
 
   constructor() {
     this.reservationRepository = new ReservationRepository();
     this.dropRepository = new DropRepository();
+    this.socketService = new SocketService(undefined as any); // Will be set after initialization
+  }
+
+  /**
+   * Set the socket service instance.
+   * Called after Socket.IO is initialized in server.ts.
+   */
+  setSocketService(socketService: SocketService): void {
+    this.socketService = socketService;
   }
 
   /**
@@ -101,6 +113,13 @@ class ReservationService {
       );
 
       // Transaction commits automatically on success
+
+      // Broadcast stock update to all connected clients
+      this.socketService.broadcast(EVENTS.DROP.STOCK_UPDATED, {
+        dropId: drop.id,
+        availableStock: drop.availableStock,
+      });
+
       return reservation;
     });
   }

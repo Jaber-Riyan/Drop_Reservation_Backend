@@ -18,8 +18,8 @@ import { createReservationSchema } from './reservation.validation';
 class ReservationController {
   private reservationService: ReservationService;
 
-  constructor() {
-    this.reservationService = new ReservationService();
+  constructor(reservationService: ReservationService) {
+    this.reservationService = reservationService;
   }
 
   /**

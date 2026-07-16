@@ -5,6 +5,8 @@ import { createServer } from 'http';
 import { initializeSocket } from './socket';
 import { createRoutes } from './routes';
 import { startReservationExpirationCron } from './cron/reservation-expiration.cron';
+import ReservationService from './modules/reservation/reservation.service';
+import PurchaseService from './modules/purchase/purchase.service';
 
 /**
  * Application entry point.
@@ -33,16 +35,22 @@ async function main(): Promise<void> {
     // Step 4: Initialize Socket.IO
     const { socketService } = initializeSocket(server);
 
-    // Step 5: Mount routes (socketService injected where needed)
-    mountRoutes(createRoutes(socketService));
+    // Step 5: Inject socketService into services
+    const reservationService = new ReservationService();
+    reservationService.setSocketService(socketService);
+
+    const purchaseService = new PurchaseService(socketService);
+
+    // Step 6: Mount routes (socketService and reservationService injected where needed)
+    mountRoutes(createRoutes(socketService, reservationService));
 
     // Mount error handlers LAST
     mountErrorHandlers();
 
-    // Step 6: Start cron jobs
+    // Step 7: Start cron jobs
     startReservationExpirationCron(socketService);
 
-    // Step 7: Start the server
+    // Step 8: Start the server
     server.listen(env.port, () => {
       console.log(`✓ Server running on port ${env.port}`);
       console.log(`✓ Environment: ${env.nodeEnv}`);
